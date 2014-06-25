@@ -21,7 +21,7 @@ module IQ
 			@socket.puts "S,SET CLIENT NAME," + @name
 		end
 
-		def getDays(ticket, days)
+		def get_days(ticket, days)
 			req_id = @request_id.to_s.rjust(7, '0')
 			exception = nil
 			
