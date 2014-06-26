@@ -1,5 +1,9 @@
 require 'socket'
 
+# TODO
+# 1. OHLC
+# 2. Results parser
+
 module IQ
 	class HistoryClient
 		attr_accessor :max_tick_number, :start_session, :end_session, :old_to_new, :ticks_per_send
@@ -21,13 +25,8 @@ module IQ
 			@socket.puts "S,SET CLIENT NAME," + @name
 		end
 
-		def get_days(ticket, days)
-			req_id = @request_id.to_s.rjust(7, '0')
-			exception = nil
-			
-			@socket.printf "HTD,%s,%07d,%07d,%s,%s,%d,%07d,%07d\r\n", 
-				ticket, days, @max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
-			
+		def process_request(req_id)
+			exception = nil			
 			while line = @socket.gets
 				next unless line =~ /^#{req_id}/
 				line.sub!(/^#{req_id},/, "") 
@@ -38,12 +37,48 @@ module IQ
 				end
 				yield line
 			end
-			
-			@request_id = @request_id + 1
 			if exception
 				raise exception
 			end
 		end
+
+		def format_request_id(type)
+			type.to_s + @request_id.to_s.rjust(7, '0')
+		end
+
+		def get_tick_days(ticket, days, &block)
+			@socket.printf "HTD,%s,%07d,%07d,%s,%s,%d,0%07d,%07d\r\n", 
+				ticket, days, 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
+			
+			process_request(format_request_id(0)) do |line|
+				block.call line
+			end
+			@request_id = @request_id + 1
+		end
+
+		def get_tick_range(ticket, start, finish, &block)
+			@socket.printf "HTT,%s,%s,%s,%07d,%s,%s,%d,0%07d,%07d\r\n", 
+				ticket, start.strftime("%Y%m%d %H%M%S"), finish.strftime("%Y%m%d %H%M%S"), 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
+
+			process_request(format_request_id(0)) do |line|
+				block.call line
+			end
+			@request_id = @request_id + 1
+		end
+
+		def get_daily_range(ticket, start, finish, &block)
+			@socket.printf "HDT,%s,%s,%s,%07d,%d,2%07d,%07d\r\n", 
+				ticket, start.strftime("%Y%m%d %H%M%S"), finish.strftime("%Y%m%d %H%M%S"), 
+				@max_tick_number, @old_to_new, @request_id, @ticks_per_send
+
+			process_request(format_request_id(2)) do |line|
+				block.call line
+			end
+			@request_id = @request_id + 1
+		end
+
 
 		def close
 			@socket.close
