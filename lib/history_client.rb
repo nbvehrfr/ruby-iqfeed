@@ -79,6 +79,27 @@ module IQ
 			@request_id = @request_id + 1
 		end
 
+		def get_ohlc_days(ticket, interval_in_seconds, days, &block)
+			@socket.printf "HID,%s,%07d,%07d,%07d,%s,%s,%d,1%07d,%07d\r\n", 
+				ticket, interval_in_seconds, days, 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
+			
+			process_request(format_request_id(1)) do |line|
+				block.call line
+			end
+			@request_id = @request_id + 1
+		end
+
+		def get_ohlc_range(ticket, interval_in_seconds, start, finish, &block)
+			@socket.printf "HIT,%s,%07d,%s,%s,%07d,%s,%s,%d,1%07d,%07d\r\n", 
+				ticket, interval_in_seconds, start.strftime("%Y%m%d %H%M%S"), finish.strftime("%Y%m%d %H%M%S"), 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
+
+			process_request(format_request_id(1)) do |line|
+				block.call line
+			end
+			@request_id = @request_id + 1
+		end
 
 		def close
 			@socket.close
