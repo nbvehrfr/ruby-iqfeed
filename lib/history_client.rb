@@ -1,10 +1,36 @@
 require 'socket'
 
 # TODO
-# 1. OHLC
-# 2. Results parser
+# 1. Results parser
+# 2. Future contracts joiner
 
 module IQ
+	class Tick
+		attr_accessor :time_stamp, :last_price, :last_size, :total_volume, :bid, :ask, :tick_id
+		
+		def self.parse(line)
+			tick = Tick.new
+			fields = line.split(',')
+			tick.time_stamp = fields[0]
+			tick.last_price = fields[1]
+			tick.last_size = fields[2]
+			tick.total_volume = fields[3]
+			tick.bid = fields[4]
+			tick.ask = fields[5]
+			tick			
+		end 
+
+		def to_s
+			puts "Timestamp:#{@time_stamp} LastPrice:#{@last_price} LastSize:#{@last_size} TotalVolume:#{@total_volume} Bid:#{@bid} Ask:#{@ask}"
+		end
+	end
+
+	class OHLC
+	end
+
+	class Day
+	end
+
 	class HistoryClient
 		attr_accessor :max_tick_number, :start_session, :end_session, :old_to_new, :ticks_per_send
 
