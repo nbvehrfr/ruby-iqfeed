@@ -26,6 +26,24 @@ module IQ
 	end
 
 	class OHLC
+		attr_accessor :time_stamp, :high, :low, :open, :close, :total_volume, :period_volume
+		
+		def self.parse(line)
+			tick = Tick.new
+			fields = line.split(',')
+			tick.time_stamp = fields[0]
+			tick.high = fields[1]
+			tick.low = fields[2]
+			tick.open = fields[3]
+			tick.close = fields[4]
+			tick.total_volume = fields[5]
+			tick.period_volume = fields[6]
+			tick			
+		end 
+
+		def to_s
+			puts "Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
+		end
 	end
 
 	class Day
