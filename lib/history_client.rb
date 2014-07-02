@@ -1,7 +1,7 @@
 require 'socket'
 
 # TODO
-# 1. Results parser
+# 1. General parser
 # 2. Future contracts joiner
 
 module IQ
@@ -46,7 +46,25 @@ module IQ
 		end
 	end
 
-	class Day
+	class DWM # day, week, month
+		attr_accessor :time_stamp, :high, :low, :open, :close, :period_volume, :open_interest
+		
+		def self.parse(line)
+			tick = Tick.new
+			fields = line.split(',')
+			tick.time_stamp = fields[0]
+			tick.high = fields[1]
+			tick.low = fields[2]
+			tick.open = fields[3]
+			tick.close = fields[4]
+			tick.period_volume = fields[5]
+			tick.open_interest = fields[6]
+			tick			
+		end 
+
+		def to_s
+			puts "Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
+		end
 	end
 
 	class HistoryClient
