@@ -4,5 +4,5 @@ c = IQ::HistoryClient.new({})
 c.open
 # 2 hours of tick history
 c.get_tick_range('@EU#', Time.now - 2 * 3600, Time.now) do |line|
-	puts line
+	puts line.to_s
 end
