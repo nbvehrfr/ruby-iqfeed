@@ -25,16 +25,16 @@ module IQ
 		attr_accessor :time_stamp, :high, :low, :open, :close, :total_volume, :period_volume
 		
 		def self.parse(line)
-			tick = OHLC.new
+			ohlc = OHLC.new
 			fields = line.split(',')
-			tick.time_stamp = fields[0]
-			tick.high = fields[1]
-			tick.low = fields[2]
-			tick.open = fields[3]
-			tick.close = fields[4]
-			tick.total_volume = fields[5]
-			tick.period_volume = fields[6]
-			tick			
+			ohlc.time_stamp = fields[0]
+			ohlc.high = fields[1]
+			ohlc.low = fields[2]
+			ohlc.open = fields[3]
+			ohlc.close = fields[4]
+			ohlc.total_volume = fields[5]
+			ohlc.period_volume = fields[6]
+			ohlc			
 		end 
 
 		def to_s
@@ -46,16 +46,16 @@ module IQ
 		attr_accessor :time_stamp, :high, :low, :open, :close, :period_volume, :open_interest
 		
 		def self.parse(line)
-			tick = DWM.new
+			dwm = DWM.new
 			fields = line.split(',')
-			tick.time_stamp = fields[0]
-			tick.high = fields[1]
-			tick.low = fields[2]
-			tick.open = fields[3]
-			tick.close = fields[4]
-			tick.period_volume = fields[5]
-			tick.open_interest = fields[6]
-			tick			
+			dwm.time_stamp = fields[0]
+			dwm.high = fields[1]
+			dwm.low = fields[2]
+			dwm.open = fields[3]
+			dwm.close = fields[4]
+			dwm.period_volume = fields[5]
+			dwm.open_interest = fields[6]
+			dwm			
 		end 
 
 		def to_s
@@ -66,7 +66,12 @@ module IQ
 	class HistoryClient
 		attr_accessor :max_tick_number, :start_session, :end_session, :old_to_new, :ticks_per_send
 
-		def initialize(options)
+		def initialize(options = {})
+			parse_options(options)
+			@request_id = 0
+		end
+
+		def parse_options(options)
 			@host = options[:host] || 'localhost'
 			@port = options[:port] || 9100
 			@name = options[:name] || 'DEMO'
@@ -75,7 +80,6 @@ module IQ
 			@end_session = options[:end_session] || '235959'
 			@old_to_new = options[:old_to_new] || 1 		
 			@ticks_per_send = options[:ticks_per_send] || 500
-			@request_id = 0
 		end
 
 		def open
