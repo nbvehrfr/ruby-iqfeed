@@ -1,9 +1,5 @@
 require 'socket'
 
-# TODO
-# 1. General parser
-# 2. Future contracts joiner
-
 module IQ
 	class Tick
 		attr_accessor :time_stamp, :last_price, :last_size, :total_volume, :bid, :ask, :tick_id
@@ -21,7 +17,7 @@ module IQ
 		end 
 
 		def to_s
-			puts "Timestamp:#{@time_stamp} LastPrice:#{@last_price} LastSize:#{@last_size} TotalVolume:#{@total_volume} Bid:#{@bid} Ask:#{@ask}"
+			"Timestamp:#{@time_stamp} LastPrice:#{@last_price} LastSize:#{@last_size} TotalVolume:#{@total_volume} Bid:#{@bid} Ask:#{@ask}"
 		end
 	end
 
@@ -29,7 +25,7 @@ module IQ
 		attr_accessor :time_stamp, :high, :low, :open, :close, :total_volume, :period_volume
 		
 		def self.parse(line)
-			tick = Tick.new
+			tick = OHLC.new
 			fields = line.split(',')
 			tick.time_stamp = fields[0]
 			tick.high = fields[1]
@@ -42,7 +38,7 @@ module IQ
 		end 
 
 		def to_s
-			puts "Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
+			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
 		end
 	end
 
@@ -50,7 +46,7 @@ module IQ
 		attr_accessor :time_stamp, :high, :low, :open, :close, :period_volume, :open_interest
 		
 		def self.parse(line)
-			tick = Tick.new
+			tick = DWM.new
 			fields = line.split(',')
 			tick.time_stamp = fields[0]
 			tick.high = fields[1]
@@ -63,7 +59,7 @@ module IQ
 		end 
 
 		def to_s
-			puts "Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
+			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} PeriodVolume:#{@period_volume} OpenInterest:#{@open_interest}"
 		end
 	end
 
@@ -88,7 +84,15 @@ module IQ
 		end
 
 		def process_request(req_id)
-			exception = nil			
+			exception = nil
+			case req_id[0]
+				when '0'					
+					parse = Proc.new{|line| IQ::Tick.parse(line)}
+				when '1'
+					parse = Proc.new{|line| IQ::OHLC.parse(line)}
+				when '2'
+					parse = Proc.new{|line| IQ::DWM.parse(line)}
+				end		
 			while line = @socket.gets
 				next unless line =~ /^#{req_id}/
 				line.sub!(/^#{req_id},/, "") 
@@ -97,7 +101,7 @@ module IQ
 				elsif line =~ /!ENDMSG!,/
 					break
 				end
-				yield line
+				yield parse.call(line)
 			end
 			if exception
 				raise exception
