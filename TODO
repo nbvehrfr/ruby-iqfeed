@@ -1,3 +1,5 @@
 - online quote subscriber
-- history tick data downloader
 - range and volume bar adapters
+- csv output for history downloader
+
+
