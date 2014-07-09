@@ -19,6 +19,10 @@ module IQ
 		def to_s
 			"Timestamp:#{@time_stamp} LastPrice:#{@last_price} LastSize:#{@last_size} TotalVolume:#{@total_volume} Bid:#{@bid} Ask:#{@ask}"
 		end
+
+		def to_csv
+			[@time_stamp, @last_price, @last_size, @total_volume, @bid, @ask].join(';')
+		end
 	end
 
 	class OHLC
@@ -38,7 +42,11 @@ module IQ
 		end 
 
 		def to_s
-			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} TotalVolume:#{@total_volume} PeriodVolume:#{@total_volume}"
+			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@open} Close:#{@close} TotalVolume:#{@total_volume} PeriodVolume:#{@period_volume}"
+		end
+
+		def to_csv
+			[@time_stamp, @high, @low, @open, @close, @total_volume, @period_volume].join(';')
 		end
 	end
 
@@ -59,7 +67,11 @@ module IQ
 		end 
 
 		def to_s
-			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@high} Close:#{@low} PeriodVolume:#{@period_volume} OpenInterest:#{@open_interest}"
+			"Timestamp:#{@time_stamp} High:#{@high} Low:#{@low} Open:#{@open} Close:#{@close} PeriodVolume:#{@period_volume} OpenInterest:#{@open_interest}"
+		end
+
+		def to_csv
+			[@time_stamp, @high, @low, @open, @close, @period_volume, @open_interest].join(';')
 		end
 	end
 

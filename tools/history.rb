@@ -44,11 +44,15 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   exit                                                                   
 end 
 
-pp options
+# create default output file name
+# TODO remove #$%^& chars
+options[:output] ||= options[:symbol] + '.csv'
 
-c = IQ::HistoryClient.new
-c.open
-c.get_tick_range(options[:symbol], options[:from], options[:to]) do |line|
-	puts line.to_s
+output_file = File.new(options[:output], "w")
+iq_client = IQ::HistoryClient.new
+iq_client.open
+iq_client.get_tick_range(options[:symbol], options[:from], options[:to]) do |tick|
+	output_file.puts tick.to_csv
 end
+output_file.close
 
