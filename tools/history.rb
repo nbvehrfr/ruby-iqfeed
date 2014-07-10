@@ -4,6 +4,13 @@ require 'pp'
 require 'date'
 require '../lib/history_client'
 
+# TODO: choose function depens on type
+def client_proxy(iq_client, options, &block)
+  iq_client.get_tick_range(options[:symbol], options[:from], options[:to]) do |line|
+    block.call line
+  end
+end
+
 options = {}
 
 opts = OptionParser.new do |opts|
@@ -27,6 +34,13 @@ opts = OptionParser.new do |opts|
     options[:output] = output
   end
 
+  opts.on("-t", "--type [TYPE]", [:tick, :ohlc, :dwm], "Select data type (tick, ohlc, dwm)") do |type|
+    options[:type] = type
+  end
+
+  opts.on("-d", "--duration [SECONDS]", "Candle duration in seconds for OHLC type") do |duration|
+    options[:duration] = duration
+  end
 end
 
 begin
@@ -46,12 +60,15 @@ end
 
 # create default output file name
 options[:output] ||= options[:symbol].gsub(/[@\$\^#]/,'') + '.csv'
+options[:type] ||= :tick
+# default duration for ohlc is 5m
+options[:duration] ||= 300 if options[:type] == :ohlc
 
 output_file = File.new(options[:output], "w")
 iq_client = IQ::HistoryClient.new
 iq_client.open
-iq_client.get_tick_range(options[:symbol], options[:from], options[:to]) do |tick|
-	output_file.puts tick.to_s
+
+client_proxy(iq_client, options) do |tick|
 	output_file.puts tick.to_csv
 end
 output_file.close
