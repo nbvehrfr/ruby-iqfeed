@@ -4,9 +4,8 @@ require 'pp'
 require 'date'
 require '../lib/history_client'
 
-# TODO: choose function depens on type
 def client_proxy(iq_client, options, &block)
-  iq_client.get_tick_range(options[:symbol], options[:from], options[:to]) do |line|
+  iq_client.send(options[:method], options) do |line|
     block.call line
   end
 end
@@ -34,8 +33,14 @@ opts = OptionParser.new do |opts|
     options[:output] = output
   end
 
-  opts.on("-t", "--type [TYPE]", [:tick, :ohlc, :dwm], "Select data type (tick, ohlc, dwm)") do |type|
-    options[:type] = type
+  opts.on("-t", "--type [TYPE]", [:tick, :ohlc, :dwm], "Select data type (tick, ohlc, dwm)") do |type|    
+    if type == :ohlc
+      options[:method] = :get_ohlc_range 
+    elsif type == :dwm
+      options[:method] = :get_daily_range
+    else
+      
+    end
   end
 
   opts.on("-d", "--duration [SECONDS]", "Candle duration in seconds for OHLC type") do |duration|
@@ -58,9 +63,9 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   exit                                                                   
 end 
 
+options[:method] ||= :get_tick_range 
 # create default output file name
 options[:output] ||= options[:symbol].gsub(/[@\$\^#]/,'') + '.csv'
-options[:type] ||= :tick
 # default duration for ohlc is 5m
 options[:duration] ||= 300 if options[:type] == :ohlc
 
