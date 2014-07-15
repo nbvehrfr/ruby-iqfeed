@@ -1,6 +1,19 @@
 require 'socket'
+require 'observer'
 
 module IQ
+	class Level1Observer
+		attr_accessor :symbol
+
+		def initialize(symbol)
+			@symbol = symbol
+		end
+
+		def update(tick)
+			puts tick.to_s
+		end
+	end
+
 	class Level1Tick
 		attr_accessor :type, :symbol, :last, :change, :percent_change, :total_volume, :incremental_volume, :high, :low, :bid, :ask, :bid_size, :ask_size, :tick, :bid_tick
 		def self.parse(line)
@@ -35,6 +48,8 @@ module IQ
 	end
 
 	class Level1Client
+		include Observable
+
 		def initialize(options = {})
 			parse_options(options)			
 		end
@@ -51,25 +66,26 @@ module IQ
 			@socket.puts "S,SET CLIENT NAME," + @name
 		end
 
-		def add(symbol)
-			@socket.puts "w" + symbol;
+		def add(observer)
+			@socket.puts "w" + observer.symbol
+			add_observer(observer)
 		end
 
 		def remove(symbol)
 			@socket.puts "r" + symbol;
 		end
 
-		def process_request(req_id)
+		def run
 			exception = nil
 			while line = @socket.gets
-				#next unless line =~ /^#{req_id}/
-				#line.sub!(/^#{req_id},/, "") 
 				if line =~ /^E,/
 					exception = 'No Data'
 				elsif line =~ /!ENDMSG!,/
 					break
 				end
-				yield Level1Tick.parse(line)				
+				tick = Level1Tick.parse(line)
+				changed
+				notify_observers(tick)
 			end
 			if exception
 				raise exception
