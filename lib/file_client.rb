@@ -16,7 +16,7 @@ module IQ
 	class FileTick
 		attr_accessor :time_stamp, :last_price, :last_size, :total_volume, :bid, :ask
 		def self.parse(line)
-			fields = line.split(',')
+			fields = line.split(';')
 			tick = FileTick.new
 			tick.time_stamp = fields[0]
 			tick.last_price = fields[1]
