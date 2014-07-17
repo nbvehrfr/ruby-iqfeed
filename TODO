@@ -1,5 +1,4 @@
-- create fileclient
-- generalize online, history and file
+- change history client to use observable module
 - range and volume bar adapters
 
 
