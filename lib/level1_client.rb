@@ -15,34 +15,33 @@ module IQ
 	end
 
 	class Level1Tick
-		attr_accessor :type, :symbol, :last, :change, :percent_change, :total_volume, :incremental_volume, :high, :low, :bid, :ask, :bid_size, :ask_size, :tick, :bid_tick
+		attr_accessor :type, :time_stamp, :last_price, :total_volume, :last_size, :bid, :ask
 		def self.parse(line)
 			fields = line.split(',')
 			tick = Level1Tick.new
 			tick.type = fields[17]
 			tick.bid = fields[10]
-			tick.bid_size = fields[12]
 			tick.ask = fields[11]
-			tick.ask_size = fields[13]
-			tick.tick = fields[14]
-			tick.last = fields[3]
-			tick.incremental_volume = fields[7]
-			tick
+			tick.last_price = fields[3]
+			tick.last_size = fields[7]
+			tick.total_volume = fields[6]
+			tick.time_stamp = fields[65]
+			tick.type =~ /t/ ? tick : nil
 		end
 
 		def to_s
-			if (@type =~ /b/)
-				"Bid: #{@bid_size}@#{@bid}"
-			elsif (@type =~ /a/)
-				"Ask: #{@ask_size}@#{@ask}"
-			elsif (@type =~ /t/)
-				"Trade: #{@last} #{@incremental_volume}"
-			elsif (@type =~ /T/)
-				"extendedTrade"
-			elsif !@type.nil?
-				"other"
-			else
-				nil
+#			if (@type =~ /b/)
+#				"Bid: #{@bid_size}@#{@bid}"
+#			elsif (@type =~ /a/)
+#				"Ask: #{@ask_size}@#{@ask}"
+			if (@type =~ /t/)
+				"Timestamp:#{@time_stamp} LastPrice:#{@last_price} LastSize:#{@last_size} TotalVolume:#{@total_volume} Bid:#{@bid} Ask:#{@ask}"			
+#			elsif (@type =~ /T/)
+#				"extendedTrade"
+#			elsif !@type.nil?
+#				"other"
+#			else
+#				nil
 			end			
 		end
 	end
@@ -84,6 +83,7 @@ module IQ
 					break
 				end
 				tick = Level1Tick.parse(line)
+				next if tick.nil?
 				changed
 				notify_observers(tick)
 			end
