@@ -1,6 +1,16 @@
 require 'socket'
+require 'observer'
 
 module IQ
+	class HistoryObserver
+		def initialize()			
+		end
+
+		def update(tick)
+			puts tick.to_s
+		end
+	end
+	
 	class Tick
 		attr_accessor :time_stamp, :last_price, :last_size, :total_volume, :bid, :ask, :tick_id
 		
@@ -76,6 +86,7 @@ module IQ
 	end
 
 	class HistoryClient
+		include Observable
 		attr_accessor :max_tick_number, :start_session, :end_session, :old_to_new, :ticks_per_send
 
 		def initialize(options = {})
@@ -127,38 +138,35 @@ module IQ
 		def format_request_id(type)
 			type.to_s + @request_id.to_s.rjust(7, '0')
 		end
+		
+		def run(type)
+			process_request(format_request_id(type)) do |line|
+				puts line
+				changed
+				notify_observers(line)
+			end
+			@request_id = @request_id + 1
+		end
 
-		def get_tick_range(options, &block)
+		def get_tick_range(options, observer)
 			@socket.printf "HTT,%s,%s,%s,%07d,%s,%s,%d,0%07d,%07d\r\n", 
 				options[:symbol], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
 				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
-
-			process_request(format_request_id(0)) do |line|
-				block.call line
-			end
-			@request_id = @request_id + 1
+			add_observer(observer)			
 		end
 
-		def get_daily_range(options, &block)
+		def get_daily_range(options, observer)
 			@socket.printf "HDT,%s,%s,%s,%07d,%d,2%07d,%07d\r\n", 
 				options[:symbol], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
 				@max_tick_number, @old_to_new, @request_id, @ticks_per_send
-
-			process_request(format_request_id(2)) do |line|
-				block.call line
-			end
-			@request_id = @request_id + 1
+			add_observer(observer)			
 		end
 
-		def get_ohlc_range(options, &block)
+		def get_ohlc_range(options, observer)
 			@socket.printf "HIT,%s,%07d,%s,%s,%07d,%s,%s,%d,1%07d,%07d\r\n", 
 				options[:symbol], options[:duration], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
 				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
-
-			process_request(format_request_id(1)) do |line|
-				block.call line
-			end
-			@request_id = @request_id + 1
+			add_observer(observer)			
 		end
 
 		def close
