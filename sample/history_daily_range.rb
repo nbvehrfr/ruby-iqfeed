@@ -1,7 +1,8 @@
 require '../lib/history_client'
 
+o = IQ::HistoryObserver.new
 c = IQ::HistoryClient.new
 c.open
-c.get_daily_range({:symbol => '@EU#', :from => Time.now - 1, :to => Time.now}) do |line|
-	puts line.to_s
-end
+# 2 hours of tick history
+c.get_daily_range({:symbol => '@EU#', :from => Time.now - 3600*24, :to => Time.now}, o)
+c.run(2)

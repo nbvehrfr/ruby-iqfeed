@@ -1,4 +1,4 @@
-- fix history samples
+- remove type, calculate based on id prefix
 - range and volume bar adapters
 
 

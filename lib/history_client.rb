@@ -141,7 +141,6 @@ module IQ
 		
 		def run(type)
 			process_request(format_request_id(type)) do |line|
-				puts line
 				changed
 				notify_observers(line)
 			end
