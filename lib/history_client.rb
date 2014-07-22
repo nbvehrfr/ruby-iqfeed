@@ -110,25 +110,23 @@ module IQ
 			@socket.puts "S,SET CLIENT NAME," + @name
 		end
 
-		def process_request(req_id)
-			exception = nil
-			case req_id[0]
-				when '0'					
-					parse = Proc.new{|line| IQ::Tick.parse(line)}
-				when '1'
-					parse = Proc.new{|line| IQ::OHLC.parse(line)}
-				when '2'
-					parse = Proc.new{|line| IQ::DWM.parse(line)}
-				end		
+		def process_request
+			procs = []
+			exception = nil			
+
+			procs[0] = Proc.new{|line| IQ::Tick.parse(line)}
+			procs[1] = Proc.new{|line| IQ::OHLC.parse(line)}
+			procs[2] = Proc.new{|line| IQ::DWM.parse(line)}
+
 			while line = @socket.gets
-				next unless line =~ /^#{req_id}/
-				line.sub!(/^#{req_id},/, "") 
+				fields = line.match(/^([^,]+),(.*)/) 
+				line = fields[2]
 				if line =~ /^E,/
 					exception = 'No Data'
 				elsif line =~ /!ENDMSG!,/
 					break
 				end
-				yield parse.call(line)
+				yield procs[fields[1][0].to_i].call(line)
 			end
 			if exception
 				raise exception
@@ -139,8 +137,8 @@ module IQ
 			type.to_s + @request_id.to_s.rjust(7, '0')
 		end
 		
-		def run(type)
-			process_request(format_request_id(type)) do |line|
+		def run
+			process_request do |line|
 				changed
 				notify_observers(line)
 			end
