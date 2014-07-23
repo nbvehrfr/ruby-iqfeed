@@ -18,12 +18,12 @@ module IQ
 		def self.parse(line)
 			fields = line.split(';')
 			tick = FileTick.new
-			tick.time_stamp = fields[0]
-			tick.last_price = fields[1]
-			tick.last_size = fields[2]
-			tick.total_volume = fields[3]
-			tick.bid = fields[4]
-			tick.ask = fields[5]
+			tick.time_stamp = fields[0].to_s
+			tick.last_price = fields[1].to_f
+			tick.last_size = fields[2].to_i
+			tick.total_volume = fields[3].to_i
+			tick.bid = fields[4].to_f
+			tick.ask = fields[5].to_f
 			tick
 		end
 
