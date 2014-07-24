@@ -1,5 +1,4 @@
--- volume bar plugin
--- range bar plugin
--- reorganize source
+-- refactor design to enable multiple plugins
+-- create gem
 -- create project page
 
