@@ -2,6 +2,14 @@ require 'socket'
 require 'observer'
 
 module IQ
+	class NoDataError < StandardError
+		attr_reader :object
+
+		def initialize(object)
+			@object = object
+		end
+	end
+
 	class HistoryObserver
 		def initialize()			
 		end
@@ -98,7 +106,7 @@ module IQ
 			@host = options[:host] || 'localhost'
 			@port = options[:port] || 9100
 			@name = options[:name] || 'DEMO'
-			@max_tick_number = options[:max_tick_number] || 50000
+			@max_tick_number = options[:max_tick_number] || 5000000
 			@start_session = options[:start_session] || '000000'
 			@end_session = options[:end_session] || '235959'
 			@old_to_new = options[:old_to_new] || 1 		
@@ -129,7 +137,7 @@ module IQ
 				yield procs[fields[1][0].to_i].call(line)
 			end
 			if exception
-				raise exception
+				raise NoDataError.new("No Data")
 			end
 		end
 
@@ -146,6 +154,9 @@ module IQ
 		end
 
 		def get_tick_range(options, observer)
+			printf "HTT,%s,%s,%s,%07d,%s,%s,%d,0%07d,%07d\r\n", 
+				options[:symbol], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
 			@socket.printf "HTT,%s,%s,%s,%07d,%s,%s,%d,0%07d,%07d\r\n", 
 				options[:symbol], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
 				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
