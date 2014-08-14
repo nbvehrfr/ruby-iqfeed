@@ -10,7 +10,7 @@ class FileObserver
 	def initialize(file)
 		@file = file
 	end
-	def update(tick)
+	def update(tick)    
 		@file.puts tick.to_csv		
 	end
 end
@@ -21,7 +21,7 @@ end
 
 def get_valid_codes(today, months)
   current_month = today.month
-  valid_months = months.map{|m| MONTHS.index(m) + 1}.select{|m| m >= current_month}.map{|m| "#{MONTHS[m-1]}#{today.year-2000}"}
+  valid_months = months.map{|m| MONTHS.index(m) + 1}.select{|m| m >= current_month}.map{|m| "#{MONTHS[m-1]}#{today.year-2000}"}.slice(0,2)
   valid_months = valid_months + months.slice(0, 2 - valid_months.length).map{|m| m + "#{today.year-2000+1}"} if valid_months.length < 2    
   valid_months
 end
@@ -87,7 +87,7 @@ options[:duration] ||= 300 if options[:type] == :ohlc
 
 contracts = {}
 if options[:input].nil?  
-	contracts[options[:symbol]] = []
+	contracts[options[:symbol]] = nil
 else
 	contracts_file = File.open(options[:input])
 	contracts_file.each do |line|
@@ -96,32 +96,34 @@ else
 	end
 end
 
-iq_client = IQ::HistoryClient.new
-iq_client.open
-
 from_date = options[:from]
-while from_date <= options[:to]  
-  # TODO: check if day was holiday
+to_date = options[:to]  
+while from_date <= to_date
   contracts.keys.each do |contract|
-    # no need to build contract name
-    codes = []
+    codes = []    
     if contracts[contract].nil?
       codes = [contract]      
     else
       codes = get_valid_codes(from_date, contracts[contract]).map{|c| "#{contract}#{c}"}      
     end
     codes.each do |code|
-      output_file = File.new(code.gsub("@","")+"#{from_date.year}#{from_date.month}#{from_date.day}", "w")
+      output_file = File.new(code.gsub("@","")+"_#{from_date.year}#{from_date.month}#{from_date.day}.csv", "w")
       options[:symbol] = code
       options[:from] = Time.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
       options[:to] = Time.new(from_date.year, from_date.month, from_date.day, 23, 59, 59)
       o = FileObserver.new(output_file)
+      iq_client = IQ::HistoryClient.new
+      iq_client.open
       client_proxy(iq_client, options, o) 
-      iq_client.run
+      begin        
+        iq_client.run
+      rescue IQ::NoDataError => e
+        output_file.close
+        File.delete(output_file)
+      end      
     end
-  end  
-
-  from_date = from_date.next
+  end
+  from_date = from_date.next  
 end
 
 # options[:output] ||= options[:symbol].gsub(/[@\$\^#]/,'') + '.csv'
