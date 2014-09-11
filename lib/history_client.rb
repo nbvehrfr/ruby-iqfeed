@@ -64,7 +64,7 @@ module IQ
 		end
 
 		def to_csv
-			[@time_stamp, @high, @low, @open, @close, @total_volume, @period_volume].join(';')
+			[@time_stamp, @open, @high, @low, @close, @total_volume, @period_volume].join(';')
 		end
 	end
 
@@ -171,6 +171,9 @@ module IQ
 		end
 
 		def get_ohlc_range(options, observer)
+			printf "HIT,%s,%07d,%s,%s,%07d,%s,%s,%d,1%07d,%07d\r\n", 
+				options[:symbol], options[:duration], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
+				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
 			@socket.printf "HIT,%s,%07d,%s,%s,%07d,%s,%s,%d,1%07d,%07d\r\n", 
 				options[:symbol], options[:duration], options[:from].strftime("%Y%m%d %H%M%S"), options[:to].strftime("%Y%m%d %H%M%S"), 
 				@max_tick_number, @start_session, @end_session, @old_to_new, @request_id, @ticks_per_send
