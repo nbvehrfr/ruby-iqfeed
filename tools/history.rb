@@ -107,7 +107,7 @@ while from_date <= to_date
       codes = get_valid_codes(from_date, contracts[contract]).map{|c| "#{contract}#{c}"}      
     end
     codes.each do |code|
-      output_file = File.new(code.gsub("@","")+"_#{from_date.year}#{from_date.month}#{from_date.day}.csv", "w")
+      output_file = File.new(code.gsub("@","")+"_" + ("%04d" % from_date.year) + ("%02d" % from_date.month) + ("%02d" % from_date.day) + ".csv", "w")
       options[:symbol] = code
       options[:from] = Time.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
       options[:to] = Time.new(from_date.year, from_date.month, from_date.day, 23, 59, 59)
