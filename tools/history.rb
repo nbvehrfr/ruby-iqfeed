@@ -91,11 +91,11 @@ if options[:input].nil?
 else
 	contracts_file = File.open(options[:input])
 	contracts_file.each do |line|
+		line.chomp!
 		f = line.split(';')
 		contracts[f[0]] = f[3].split(',')
 	end
 end
-
 from_date = options[:from]
 to_date = options[:to]  
 while from_date <= to_date
