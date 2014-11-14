@@ -1,5 +1,4 @@
-require "iqfeed/version"
+require 'iqfeed/version'
+require 'iqfeed/level1_client'
+require 'iqfeed/history_client'
 
-module Iqfeed
-  # Your code goes here...
-end
