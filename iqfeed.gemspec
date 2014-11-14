@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Iqfeed::VERSION
   spec.authors       = ["Tim"]
   spec.email         = ["dev@adigamov.ca"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{IQfeed client for ruby}
+  spec.description   = %q{IQfeed client for ruby. Supports history and online (level1) mode.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
