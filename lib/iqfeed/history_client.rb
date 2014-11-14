@@ -1,7 +1,7 @@
 require 'socket'
 require 'observer'
 
-module IQ
+module Iqfeed
 	class NoDataError < StandardError
 		attr_reader :object
 

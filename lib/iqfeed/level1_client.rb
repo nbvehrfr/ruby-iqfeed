@@ -1,7 +1,7 @@
 require 'socket'
 require 'observer'
 
-module IQ
+module Iqfeed
 	class Level1Observer
 		attr_accessor :symbol
 
