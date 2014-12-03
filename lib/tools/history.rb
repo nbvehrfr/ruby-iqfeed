@@ -2,7 +2,7 @@ require 'optparse'
 require 'ostruct'
 require 'pp'
 require 'date'
-require '../lib/history_client'
+require '../iqfeed'
 
 MONTHS=['F','G','H','J','K','M','N','Q','U','V','X','Z']
 
@@ -107,17 +107,17 @@ while from_date <= to_date
       codes = get_valid_codes(from_date, contracts[contract]).map{|c| "#{contract}#{c}"}      
     end
     codes.each do |code|
-      output_file = File.new(code.gsub("@","")+"_" + ("%04d" % from_date.year) + ("%02d" % from_date.month) + ("%02d" % from_date.day) + ".csv", "w")
+      output_file = File.new(code.gsub(/[@#]/,"")+"_" + ("%04d" % from_date.year) + ("%02d" % from_date.month) + ("%02d" % from_date.day) + ".csv", "w")
       options[:symbol] = code
       options[:from] = Time.new(from_date.year, from_date.month, from_date.day, 0, 0, 0)
       options[:to] = Time.new(from_date.year, from_date.month, from_date.day, 23, 59, 59)
       o = FileObserver.new(output_file)
-      iq_client = IQ::HistoryClient.new
+      iq_client = Iqfeed::HistoryClient.new
       iq_client.open
       client_proxy(iq_client, options, o) 
       begin        
         iq_client.run
-      rescue IQ::NoDataError => e
+      rescue Iqfeed::NoDataError => e
         output_file.close
         File.delete(output_file)
       end      
