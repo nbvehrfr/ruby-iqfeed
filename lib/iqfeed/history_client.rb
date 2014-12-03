@@ -122,9 +122,9 @@ module Iqfeed
 			procs = []
 			exception = nil			
 
-			procs[0] = Proc.new{|line| IQ::Tick.parse(line)}
-			procs[1] = Proc.new{|line| IQ::OHLC.parse(line)}
-			procs[2] = Proc.new{|line| IQ::DWM.parse(line)}
+			procs[0] = Proc.new{|line| Iqfeed::Tick.parse(line)}
+			procs[1] = Proc.new{|line| Iqfeed::OHLC.parse(line)}
+			procs[2] = Proc.new{|line| Iqfeed::DWM.parse(line)}
 
 			while line = @socket.gets
 				fields = line.match(/^([^,]+),(.*)/) 
